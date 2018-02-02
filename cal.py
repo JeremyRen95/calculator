@@ -2,33 +2,25 @@ import re
 import copy
 
 def mul(x):
-    ans = 1
+    ans = float(1)
     for i in x:
-        ans = ans*int(i)
+        ans = ans*float(i)
     return ans
 
 def div(x):
-    ans = int(x[0])
+    ans = float(x[0])
     x = x[1:]
     for i in x:
-        ans = ans/int(i)
-        ans = int(ans)
+        ans = ans/float(i)
+        ans = float(ans)
     return ans
 
 def add_sub(x,y): #x为所有的数字，y为所有的负数
-    ans = 0
+    ans = float(0)
     for i in x:
-        ans = ans+int(i)
+        ans = ans+float(i)
     for i in y:
-        ans = ans+2*int(i) #负号可以通过强制转换生效
-    return ans
-
-def list_reverse(x):
-    length = len(x)
-    ans = [None]*length
-    for i in x:
-        length =length - 1
-        ans[length] = i
+        ans = ans+2*float(i) #负号可以通过强制转换生效
     return ans
 
 def mul_step(bracket_first):
@@ -37,10 +29,14 @@ def mul_step(bracket_first):
     # (1+9*2*1*1*1)---》['9', '2', '1', '1', '1'] 列表for循环
     #(1+9*2*1*1*1/9*2*1)
     for i in bracket_first:
-        equal_mul = re.findall('\d+\*[^+-/]*\d+',i) #存储每个底层括号内的式子,也是最后要被替换掉的元素
+        if not last_flag:
+            aa = re.findall('\*',i)
+            if not aa:
+                return [i]
+        equal_mul = re.findall('\d+\.*\d*\*[^+-/]*\d+\.*\d*',i) #存储每个底层括号内的式子,也是最后要被替换掉的元素
         #[9*2*1,9*2*1*1*1] equal_mul
         for j in equal_mul:
-            element_mul = re.findall('\d+',j) #取出乘法式子中所有的元素
+            element_mul = re.findall('\d+\.*\d*',j) #取出乘法式子中所有的元素
             equal_ans = str(mul(element_mul))
             if not last_flag:   # 用于最后一次运算的特殊情况
                 bracket_first[0] = bracket_first[0].replace(j,equal_ans,1)
@@ -54,9 +50,13 @@ def mul_step(bracket_first):
 def div_step(bracket_first):
     length_eql = 0
     for i in bracket_first:
-        equal_mul = re.findall('\d+/[^*+-]*\d+',i) #存储每个底层括号内的式子,也是最后要被替换掉的元素
+        if not last_flag:
+            aa = re.findall('/',i)
+            if not aa:
+                return [i]
+        equal_mul = re.findall('\d+\.*\d*/[^*+-]*\d+\.*\d*',i) #存储每个底层括号内的式子,也是最后要被替换掉的元素
         for j in equal_mul:
-            element_mul = re.findall('\d+',j) #取出乘法式子中所有的元素
+            element_mul = re.findall('\d+\.*\d*',j) #取出乘法式子中所有的元素
             equal_ans = str(div(element_mul))
             if not last_flag:
                 bracket_first[0] = bracket_first[0].replace(j,equal_ans,1)
@@ -71,8 +71,8 @@ def add_sub_step(bracket_first):
     for i in bracket_first:
         temp = re.findall('[^()]+',i)
         for j in temp:
-            num_all = re.findall('\d+',j) #找出所有的数
-            num_neg = re.findall('-\d+',j) #找出所有的负数
+            num_all = re.findall('\d+\.*\d*',j) #找出所有的数
+            num_neg = re.findall('-\d+\.*\d*',j) #找出所有的负数
             equal_ans = add_sub(num_all,num_neg) #算出答案
             if not last_flag:
                 return equal_ans
@@ -81,9 +81,9 @@ def add_sub_step(bracket_first):
         length_eql += 1
     return bracket_first_replace
 
-a = "1+((1+1+1)+81/9/3)*2+(2+(9-81/9/3*1/3))/2+(   1+9*2*1*1*1/9*2*1)"
+a = "1+ ((10/3+4)+2*2) + ((1+8/2/2/2)+2*3*3)"
 
-equ = a.replace(' ','')
+equ = a.replace(' ','')  #去掉公式中的空格
 print(equ)
 i = 3
 last_flag = True
